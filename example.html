@@ -25,7 +25,7 @@ vid.on('timeupdate', function(t){
   console.log(t);
 });
 
-vid.on('metaDataReceived', function(d){
+vid.on('loadedmetadata', function(d){
   console.log('metadata %j', d);
 });
 

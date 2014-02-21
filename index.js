@@ -82,7 +82,7 @@ YouTube.prototype.build = function(){
 
   window.youtubeFeedCallback = function(json){
     self.meta = json && json.data;
-    self.emit('metaDataReceived', json.data);
+    self.emit('loadedmetadata', json.data);
     debug('metadata recieved %j', json);
   };
 
