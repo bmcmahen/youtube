@@ -13,12 +13,12 @@
 var YouTube = require('youtube');
 var options = {
   height: 500,
-  width: 600,
-  target: 'target'
+  width: 600
 };
 
-
-var vid = new YouTube('http://www.youtube.com/watch?v=BV-FUvhldZ8', options);
+var url = 'http://www.youtube.com/watch?v=BV-FUvhldZ8';
+var target = document.getElementById('target');
+var vid = new YouTube(url, target, options);
 window.vid = vid;
 
 vid.on('timeupdate', function(t){

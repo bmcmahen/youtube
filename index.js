@@ -4,6 +4,7 @@
 
 var Emitter = require('emitter');
 var loadScript = require('load-script');
+var type = require('type');
 var debug = require('debug')('youtube');
 
 /**
@@ -19,16 +20,27 @@ module.exports = YouTube;
  * @param {Object} options 
  */
 
-function YouTube(src, options){
-  this.src = src;
+function YouTube(src, target, options){
+  if (!(this instanceof YouTube)) return new Youtube(src, target, options);
   this.options = options || {};
-  this.target = this.options.target;
-  this.width = this.options.width || 400;
-  this.height = this.options.height || 300;
-  this.playerVars = this.options.playerVars;
+  this.src = src;
+
+  // get our id
+  if (type(target) == 'element') {
+    var id = target.id;
+    if (!id) {
+      throw new Error('Target element must have an id');
+    }
+    this.target = id;
+  } else {
+    this.target = target;
+  }
+
   this.currentTime = 0;
   var self = this;
-  if (typeof(YT) === 'undefined') {
+
+  // load iframe api script if we haven't.
+  if (typeof YT == 'undefined') {
     window.onYouTubeIframeAPIReady = function(){
       debug('iframe api ready');
       self.build();
@@ -53,10 +65,10 @@ YouTube.prototype.build = function(){
   var id = this.getId(this.src);
 
   this.node = new YT.Player(this.target, {
-    width: this.width,
-    height: this.height,
+    width: this.options.width,
+    height: this.options.height,
     videoId: id,
-    playerVars: this.playerVars
+    playerVars: this.options.playerVars
   });
 
   this.node.addEventListener('onReady', function(){

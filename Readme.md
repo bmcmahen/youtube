@@ -14,22 +14,23 @@
 ## Example
 
 ```html
-<div id='youtube-targetnode-id'></div>
+<div id='target'></div>
 <script src='script.js'></script>
 <script>
 var YouTube = require('youtube');
-var vid = new YouTube('http://www.youtube.com/watch?v=BV-FUvhldZ8', {
-  height: 300,
-  width: 500,
-  target: 'youtube-targetnode-id'
-});
+var options = {
+  height: 500,
+  width: 600
+};
 
+var url = 'http://www.youtube.com/watch?v=BV-FUvhldZ8';
+var target = document.getElementById('target');
+var vid = new YouTube(url, target, options);
 vid.play();
 </script>
 ```
 
-The YouTube API is pretty bad and relies on the user passing in the id the target dom node where the video will be inserted. Pass in the id without the `#` sign. 
-
+Note: The Youtube API requires that your target element has an ID. 
 
 ## License
 

@@ -7,7 +7,8 @@
   "dependencies": {
     "segmentio/load-script": "*",
     "component/emitter": "*",
-    "visionmedia/debug": "*"
+    "visionmedia/debug": "*",
+    "component/type": "*"
   },
   "development": {},
   "license": "MIT",

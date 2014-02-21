@@ -200,39 +200,6 @@ require.relative = function(parent) {
 
   return localRequire;
 };
-require.register("component-type/index.js", function(exports, require, module){
-/**
- * toString ref.
- */
-
-var toString = Object.prototype.toString;
-
-/**
- * Return the type of `val`.
- *
- * @param {Mixed} val
- * @return {String}
- * @api public
- */
-
-module.exports = function(val){
-  switch (toString.call(val)) {
-    case '[object Date]': return 'date';
-    case '[object RegExp]': return 'regexp';
-    case '[object Arguments]': return 'arguments';
-    case '[object Array]': return 'array';
-    case '[object Error]': return 'error';
-  }
-
-  if (val === null) return 'null';
-  if (val === undefined) return 'undefined';
-  if (val !== val) return 'nan';
-  if (val && val.nodeType === 1) return 'element';
-
-  return typeof val.valueOf();
-};
-
-});
 require.register("segmentio-load-script/index.js", function(exports, require, module){
 var type = require('type');
 
@@ -599,6 +566,39 @@ try {
 } catch(e){}
 
 });
+require.register("component-type/index.js", function(exports, require, module){
+/**
+ * toString ref.
+ */
+
+var toString = Object.prototype.toString;
+
+/**
+ * Return the type of `val`.
+ *
+ * @param {Mixed} val
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(val){
+  switch (toString.call(val)) {
+    case '[object Date]': return 'date';
+    case '[object RegExp]': return 'regexp';
+    case '[object Arguments]': return 'arguments';
+    case '[object Array]': return 'array';
+    case '[object Error]': return 'error';
+  }
+
+  if (val === null) return 'null';
+  if (val === undefined) return 'undefined';
+  if (val !== val) return 'nan';
+  if (val && val.nodeType === 1) return 'element';
+
+  return typeof val.valueOf();
+};
+
+});
 require.register("youtube/index.js", function(exports, require, module){
 /**
  * Module Dependencies
@@ -606,6 +606,7 @@ require.register("youtube/index.js", function(exports, require, module){
 
 var Emitter = require('emitter');
 var loadScript = require('load-script');
+var type = require('type');
 var debug = require('debug')('youtube');
 
 /**
@@ -621,16 +622,27 @@ module.exports = YouTube;
  * @param {Object} options 
  */
 
-function YouTube(src, options){
-  this.src = src;
+function YouTube(src, target, options){
+  if (!(this instanceof YouTube)) return new Youtube(src, target, options);
   this.options = options || {};
-  this.target = this.options.target;
-  this.width = this.options.width || 400;
-  this.height = this.options.height || 300;
-  this.playerVars = this.options.playerVars;
+  this.src = src;
+
+  // get our id
+  if (type(target) == 'element') {
+    var id = target.id;
+    if (!id) {
+      throw new Error('Target element must have an id');
+    }
+    this.target = id;
+  } else {
+    this.target = target;
+  }
+
   this.currentTime = 0;
   var self = this;
-  if (typeof(YT) === 'undefined') {
+
+  // load iframe api script if we haven't.
+  if (typeof YT == 'undefined') {
     window.onYouTubeIframeAPIReady = function(){
       debug('iframe api ready');
       self.build();
@@ -655,10 +667,10 @@ YouTube.prototype.build = function(){
   var id = this.getId(this.src);
 
   this.node = new YT.Player(this.target, {
-    width: this.width,
-    height: this.height,
+    width: this.options.width,
+    height: this.options.height,
     videoId: id,
-    playerVars: this.playerVars
+    playerVars: this.options.playerVars
   });
 
   this.node.addEventListener('onReady', function(){
@@ -770,6 +782,8 @@ YouTube.prototype.getId = function(url){
 
 
 
+
+
 require.alias("segmentio-load-script/index.js", "youtube/deps/load-script/index.js");
 require.alias("segmentio-load-script/index.js", "load-script/index.js");
 require.alias("component-type/index.js", "segmentio-load-script/deps/type/index.js");
@@ -781,6 +795,9 @@ require.alias("visionmedia-debug/debug.js", "youtube/deps/debug/debug.js");
 require.alias("visionmedia-debug/debug.js", "youtube/deps/debug/index.js");
 require.alias("visionmedia-debug/debug.js", "debug/index.js");
 require.alias("visionmedia-debug/debug.js", "visionmedia-debug/index.js");
+require.alias("component-type/index.js", "youtube/deps/type/index.js");
+require.alias("component-type/index.js", "type/index.js");
+
 require.alias("youtube/index.js", "youtube/index.js");if (typeof exports == "object") {
   module.exports = require("youtube");
 } else if (typeof define == "function" && define.amd) {
