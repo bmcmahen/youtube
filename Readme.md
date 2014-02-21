@@ -18,14 +18,13 @@
 <script src='script.js'></script>
 <script>
 var YouTube = require('youtube');
-var vid = new YouTube('URL', {
+var vid = new YouTube('http://www.youtube.com/watch?v=BV-FUvhldZ8', {
   height: 300,
   width: 500,
   target: 'youtube-targetnode-id'
 });
 
 vid.play();
-vid.pause();
 </script>
 ```
 
