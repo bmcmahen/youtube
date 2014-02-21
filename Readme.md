@@ -9,9 +9,14 @@
 
     $ component install bmcmahen/youtube
 
+  Or use `dist/youtube.js` under the global `youtube`.
+
 ## Example
 
-```javascript
+```html
+<div id='youtube-targetnode-id'></div>
+<script src='script.js'></script>
+<script>
 var YouTube = require('youtube');
 var vid = new YouTube('URL', {
   height: 300,
@@ -21,7 +26,7 @@ var vid = new YouTube('URL', {
 
 vid.play();
 vid.pause();
-// check the source...
+</script>
 ```
 
 The YouTube API is pretty bad and relies on the user passing in the id the target dom node where the video will be inserted. Pass in the id without the `#` sign. 
