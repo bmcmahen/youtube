@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+
+<div id='target'></div>
+
+<script src='/build.js'></script>
+<script> 
+
+var YouTube = require('youtube');
+var options = {
+  height: 500,
+  width: 600,
+  target: 'target'
+};
+
+
+var vid = new YouTube('http://www.youtube.com/watch?v=BV-FUvhldZ8', options);
+window.vid = vid;
+
+vid.on('timeupdate', function(t){
+  console.log(t);
+});
+
+vid.on('metaDataReceived', function(d){
+  console.log('metadata %j', d);
+});
+
+
+
+</script>
+</body>
+</html>
