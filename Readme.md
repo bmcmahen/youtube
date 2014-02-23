@@ -30,8 +30,6 @@ vid.play();
 </script>
 ```
 
-Note: The Youtube API requires that your target element has an ID. 
-
 ## License
 
   The MIT License (MIT)
