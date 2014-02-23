@@ -4,8 +4,8 @@
 
 var Emitter = require('emitter');
 var loadScript = require('load-script');
-var type = require('type');
-var debug = require('debug')('youtube');
+var uid = require('uid');
+
 
 /**
  * Expose Youtube
@@ -25,26 +25,16 @@ function YouTube(src, target, options){
   this.options = options || {};
   this.src = src;
 
-  // get our id
-  if (type(target) == 'element') {
-    var id = target.id;
-    if (!id) {
-      throw new Error('Target element must have an id');
-    }
-    this.target = id;
-  } else {
-    this.target = target;
-  }
+  var el = document.createElement('div');
+  this.target = el.id = uid();
+  target.appendChild(el);
 
   this.currentTime = 0;
   var self = this;
 
   // load iframe api script if we haven't.
   if (typeof YT == 'undefined') {
-    window.onYouTubeIframeAPIReady = function(){
-      debug('iframe api ready');
-      self.build();
-    };
+    window.onYouTubeIframeAPIReady = this.build.bind(this);
     loadScript('//www.youtube.com/iframe_api');
   } else {
     this.build();
@@ -60,8 +50,6 @@ Emitter(YouTube.prototype);
  */
 
 YouTube.prototype.build = function(){
-  var self = this;
-
   var id = this.getId(this.src);
 
   this.node = new YT.Player(this.target, {
@@ -71,22 +59,23 @@ YouTube.prototype.build = function(){
     playerVars: this.options.playerVars
   });
 
-  this.node.addEventListener('onReady', function(){
-    debug('video ready');
-    self.isReady = true;
-    self.bindEvents();
-    self.duration = self.node.getDuration();
-    self.node.playVideo();
-    self.emit('ready');
-  });
+  function onReady(){
+    this.isReady = true;
+    this.bindEvents();
+    this.duration = this.node.getDuration();
+    this.node.playVideo();
+    this.emit('ready');
+  }
 
+  this.node.addEventListener('onReady', onReady.bind(this));
+  
+  var self = this;
   window.youtubeFeedCallback = function(json){
     self.meta = json && json.data;
     self.emit('loadedmetadata', json.data);
-    debug('metadata recieved %j', json);
   };
 
-  loadScript('http://gdata.youtube.com/feeds/api/videos/'+ id +'?v=2&alt=jsonc&callback=youtubeFeedCallback')
+  loadScript('http://gdata.youtube.com/feeds/api/videos/'+ id +'?v=2&alt=jsonc&callback=youtubeFeedCallback');
 
   return this;
 };
@@ -98,13 +87,37 @@ YouTube.prototype.build = function(){
  */
 
 YouTube.prototype.bindEvents = function(){
-  var self = this;
   var node = this.node;
-  node.addEventListener('onStateChange', function(state){
-    if (state.data === 1) self.onPlayback();
-    else if (state.data === 0 || state.data === 2) self.onErrorOrPause();
-  });
-  node.addEventListener('onError', this.onErrorOrPause.bind(this));
+
+  function onchange(state){
+    switch(state) {
+      case 0:
+        this.emit('ended');
+        this.onErrorOrPause();
+        break;
+      case 1:
+        this.emit('playing');
+        this.onPlayback();
+        break;
+      case 2:
+        this.emit('pause');
+        break;
+      case 3:
+        this.emit('buffering');
+        break;
+      case 5:
+        this.emit('cued');
+        break;
+      case 'error':
+        this.emit('error');
+        this.onErrorOrPause();
+        break;
+    }
+  }
+
+  node.addEventListener('onStateChange', onchange.bind(this));
+  node.addEventListener('onError', onchange.bind(this, 'error'));
+
   return this;
 };
 
@@ -131,7 +144,6 @@ YouTube.prototype.onTimeUpdate = function(){
  */
 
 YouTube.prototype.pause = function(){
-  debug('pause');
   this.node.pauseVideo(); 
   this.playing = false;
   return this;
@@ -142,7 +154,6 @@ YouTube.prototype.pause = function(){
  */
 
 YouTube.prototype.play = function(){
-  debug('play');
   this.node.playVideo();
   this.playing = true;
   return this;
@@ -154,7 +165,6 @@ YouTube.prototype.play = function(){
  */
 
 YouTube.prototype.onPlayback = function(){
-  debug('on playback');
   this.playing = true;
   if (this.interval) clearInterval(this.interval);
   this.interval = setInterval(this.onTimeUpdate.bind(this), 250);
