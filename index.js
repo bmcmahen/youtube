@@ -183,3 +183,14 @@ YouTube.prototype.getId = function(url){
     return match[2];
   }
 };
+
+/**
+ * Remove our video from the dom
+ * 
+ * @return {YouTube} 
+ */
+
+YouTube.prototype.remove = function(){
+  this.target.parentNode.removeChild(this.target);
+  return this;
+};
