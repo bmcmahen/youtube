@@ -6,6 +6,7 @@
 <body>
 
 <div id='target'></div>
+<button id='show'>show</button>
 
 <script src='/build.js'></script>
 <script> 
@@ -21,19 +22,19 @@ var options = {
 
 var url = 'http://www.youtube.com/watch?v=BV-FUvhldZ8';
 var target = document.getElementById('target');
-var vid = new YouTube(url, target, options);
-window.vid = vid;
-
-vid.on('timeupdate', function(t){
-  console.log(t);
-});
-
-vid.on('loadedmetadata', function(d){
-  console.log('metadata %j', d);
-});
 
 
+function add(){
+  if (window.vid) {
+    window.vid.remove();
+  }
 
+  var vid = new YouTube(url, target, options);
+  window.vid = vid;
+  vid.play();
+}
+
+document.getElementById('show').onclick = add;
 </script>
 </body>
 </html>

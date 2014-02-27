@@ -25,7 +25,7 @@ function YouTube(src, target, options){
   this.options = options || {};
   this.src = src;
 
-  var el = document.createElement('div');
+  var el = this.el = document.createElement('div');
   this.target = el.id = uid();
   target.appendChild(el);
 
@@ -63,11 +63,11 @@ YouTube.prototype.build = function(){
     this.isReady = true;
     this.bindEvents();
     this.duration = this.node.getDuration();
-    this.node.playVideo();
     this.emit('ready');
   }
 
-  this.node.addEventListener('onReady', onReady.bind(this));
+  this._boundReady = onReady.bind(this);
+  this.node.addEventListener('onReady', this._boundReady);
   return this;
 };
 
@@ -127,7 +127,8 @@ YouTube.prototype.bindEvents = function(){
     }
   }
 
-  node.addEventListener('onStateChange', onchange.bind(this));
+  this._boundonchange = onchange.bind(this);
+  node.addEventListener('onStateChange', this._boundonchange);
   node.addEventListener('onError', onchange.bind(this, 'error'));
 
   return this;
@@ -166,6 +167,10 @@ YouTube.prototype.pause = function(){
  */
 
 YouTube.prototype.play = function(){
+  if (!this.isReady) {
+    this.once('ready', this.play.bind(this));
+    return;
+  }
   this.node.playVideo();
   this.playing = true;
   return this;
@@ -203,6 +208,9 @@ YouTube.prototype.getId = function(url){
  */
 
 YouTube.prototype.remove = function(){
-  this.target.parentNode.removeChild(this.target);
+  this.node.removeEventListener('onStateChange', this._boundonchange);
+  this.node.removeEventListener('onReady', this._boundReady);
+  var el = document.getElementById(this.target);
+  el.parentNode.removeChild(el);
   return this;
 };
