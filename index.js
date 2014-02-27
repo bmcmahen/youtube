@@ -68,15 +68,27 @@ YouTube.prototype.build = function(){
   }
 
   this.node.addEventListener('onReady', onReady.bind(this));
-  
+  return this;
+};
+
+/**
+ * Load metadata for the video
+ * 
+ * @param  {Function} fn 
+ * @return {YouTube}  
+ */
+
+YouTube.prototype.meta = function(fn){
   var self = this;
-  window.youtubeFeedCallback = function(json){
+  var id = this.getId(this.src);
+
+  window._youtubeFeedCallback = function(json){
     self.meta = json && json.data;
     self.emit('loadedmetadata', json.data);
+    if (fn) fn(json.data);
   };
 
-  loadScript('http://gdata.youtube.com/feeds/api/videos/'+ id +'?v=2&alt=jsonc&callback=youtubeFeedCallback');
-
+  loadScript('http://gdata.youtube.com/feeds/api/videos/'+ id +'?v=2&alt=jsonc&callback=_youtubeFeedCallback');
   return this;
 };
 
