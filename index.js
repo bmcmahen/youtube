@@ -5,6 +5,8 @@
 var Emitter = require('emitter');
 var loadScript = require('load-script');
 var uid = require('uid');
+var getId = require('youtube-id');
+var getMeta = require('youtube-meta');
 
 
 /**
@@ -30,7 +32,6 @@ function YouTube(src, target, options){
   target.appendChild(el);
 
   this.currentTime = 0;
-  var self = this;
 
   // load iframe api script if we haven't.
   if (typeof YT == 'undefined') {
@@ -50,7 +51,7 @@ Emitter(YouTube.prototype);
  */
 
 YouTube.prototype.build = function(){
-  var id = this.getId(this.src);
+  var id = getId(this.src);
 
   this.node = new YT.Player(this.target, {
     width: this.options.width,
@@ -79,16 +80,11 @@ YouTube.prototype.build = function(){
  */
 
 YouTube.prototype.meta = function(fn){
-  var self = this;
-  var id = this.getId(this.src);
-
-  window._youtubeFeedCallback = function(json){
-    self.meta = json && json.data;
-    self.emit('loadedmetadata', json.data);
+  getMeta(this.src, function(json){
+    this.meta = json && json.data;
+    this.emit('loadedmetadata', json.data);
     if (fn) fn(json.data);
-  };
-
-  loadScript('http://gdata.youtube.com/feeds/api/videos/'+ id +'?v=2&alt=jsonc&callback=_youtubeFeedCallback');
+  }.bind(this));
   return this;
 };
 
@@ -190,15 +186,10 @@ YouTube.prototype.onPlayback = function(){
 
 /**
  * get youtube id from url string
- * Thanks to: http://stackoverflow.com/a/9102270/1198166
  */
 
 YouTube.prototype.getId = function(url){
-  var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
-  var match = url.match(regExp);
-  if (match && match[2].length==11){
-    return match[2];
-  }
+  return getId(url);
 };
 
 /**
@@ -208,8 +199,6 @@ YouTube.prototype.getId = function(url){
  */
 
 YouTube.prototype.remove = function(){
-  this.node.removeEventListener('onStateChange', this._boundonchange);
-  this.node.removeEventListener('onReady', this._boundReady);
   var el = document.getElementById(this.target);
   el.parentNode.removeChild(el);
   return this;

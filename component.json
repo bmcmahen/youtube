@@ -2,12 +2,14 @@
   "name": "youtube",
   "repo": "bmcmahen/youtube",
   "description": "a better youtube api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "keywords": [],
   "dependencies": {
     "segmentio/load-script": "*",
     "component/emitter": "*",
-    "matthewmueller/uid": "0.0.2"
+    "matthewmueller/uid": "0.0.2",
+    "bmcmahen/youtube-id": "0.0.1",
+    "bmcmahen/youtube-meta": "0.0.1"
   },
   "development": {},
   "license": "MIT",
